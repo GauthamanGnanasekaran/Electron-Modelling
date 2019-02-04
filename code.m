@@ -1,3 +1,4 @@
+close all
 clear all
 clc
 %properties
@@ -22,7 +23,7 @@ fprintf('The thermal velocity at 300 K is %d m/s\n',vth)
 
 mfp = vth*tmn; %meanfree path 
 
-fprintf('The mean free path is %d m/s\n',mfp)
+fprintf('The mean free path is %d nm\n',mfp)
 
 %initialize the position and atoms
 atomp = rand(natoms,2); %array for position
@@ -33,53 +34,53 @@ SCT = zeros(iteration,1); %semiconductor temperature
 temp = zeros(iteration,1);
 trajectory = zeros(iteration,pc*2);
 
-% for i = 1:iteration
-%     atom(:,1:2) = atom(:,1:2) + dt*atom(:,3:4);
-%   
-%     %use logical index to rearrange electrons hitting boundaries
-%     l = atom(:,1) > x;
-%     atom(l,1) = atom(l,1) - x;
-%     
-%     l = atom(:,1) < 0;
-%     atom(l,1) = atom(l,1) + x;
-% 
-%     l = atom(:,2) > y;
-%     atom(l,4) = -1*atom(l,4);
-%     
-%     l = atom(:,2) < 0;
-%     atom(l,4) = -1*atom(l,4);
-%     
-%     
-%     temp(i) = (sum(atom(:,3).^2) + sum(atom(:,4).^2))*m/kb/2/natoms;
-%     
-%     
-%     for j = 1:pc
-%         trajectory(i,(2*j):(2*j+1)) = atom(j,1:2);
-% 
-%     end 
-%     figure(1)
-%     subplot(2,1,1);
-%     %hold off
-%     
-%     plot(atom(1:pc,1), atom(1:pc,2),'o')
-%     xlim([ 0 x])
-%     ylim([0 y])
-%     
-%     title(sprintf('Trajectories of %d electrons(Part 1)', pc));
-%     xlabel('x')
-%     ylabel('y')
-%     
-%     subplot(2,1,2)
-%     %hold off;
-%     if i>1
-%     plot(dt*(0:i-1), temp(1:i));
-%     axis([0 dt*iteration min(temp)*0.98 max(temp)*1.02]);
-%     title('Semiconductor Temperature');
-%     xlabel('Time (s)')
-%     ylabel('Temperature (K)')
-%     end
-%     %pause(0.05);
-% end
+for i = 1:iteration
+    atom(:,1:2) = atom(:,1:2) + dt*atom(:,3:4);
+  
+    %use logical index to rearrange electrons hitting boundaries
+    l = atom(:,1) > x;
+    atom(l,1) = atom(l,1) - x;
+    
+    l = atom(:,1) < 0;
+    atom(l,1) = atom(l,1) + x;
+
+    l = atom(:,2) > y;
+    atom(l,4) = -1*atom(l,4);
+    
+    l = atom(:,2) < 0;
+    atom(l,4) = -1*atom(l,4);
+    
+    
+    temp(i) = (sum(atom(:,3).^2) + sum(atom(:,4).^2))*m/kb/2/natoms;
+    
+    
+    for j = 1:pc
+        trajectory(i,(2*j):(2*j+1)) = atom(j,1:2);
+
+    end 
+    figure(1)
+    subplot(2,1,1);
+    hold on
+    
+    plot(atom(1:pc,1), atom(1:pc,2),'o')
+    xlim([ 0 x])
+    ylim([0 y])
+    
+    title(sprintf('Trajectories of %d electrons(Part 1)', pc));
+    xlabel('x')
+    ylabel('y')
+    
+    subplot(2,1,2)
+    %hold off;
+    if i>1
+    plot(dt*(0:i-1), temp(1:i));
+    axis([0 dt*iteration min(temp)*0.98 max(temp)*1.02]);
+    title('Semiconductor Temperature');
+    xlabel('Time (s)')
+    ylabel('Temperature (K)')
+    end
+    %pause(0.05);
+end
 
     %part 2
  %Collisions with Mean Free Path
