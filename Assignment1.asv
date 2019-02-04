@@ -1,0 +1,160 @@
+clear all
+clc
+%properties
+m0 = 9.10938215e-31;%resting mass
+m = 9.10938215e-31*0.26;
+q = 1.60217653e-19;
+kb = 1.38064852e-23;
+T = 300;
+tmn = 0.2e-12; %time between collisions
+%part 1
+%plot parameters
+x = 200e-9;
+y = 100e-9;
+natoms = 3000;
+iteration = 100;
+pc = 10; %population displayed on plot;
+
+%thermal velocity
+vth = sqrt((2*kb*T)/m); %thermal velocity
+dt = y/vth/50; %time step
+fprintf('The thermal velocity at 300 K is %d m/s\n',vth)
+
+mfp = vth*tmn; %meanfree path 
+
+fprintf('The mean free path is %d m/s\n',mfp)
+
+%initialize the position and atoms
+atomp = rand(natoms,2); %array for position
+atomp(:,1) = atomp(:,1)*x; atomp(:,2) = atomp(:,2)*y; 
+atomv = vth*cos(2*pi*rand(natoms,2));
+atom = [atomp atomv];
+SCT = zeros(iteration,1); %semiconductor temperature
+temp = zeros(iteration,1);
+trajectory = zeros(iteration,pc*2);
+
+% for i = 1:iteration
+%     atom(:,1:2) = atom(:,1:2) + dt*atom(:,3:4);
+%   
+%     %use logical index to rearrange electrons hitting boundaries
+%     l = atom(:,1) > x;
+%     atom(l,1) = atom(l,1) - x;
+%     
+%     l = atom(:,1) < 0;
+%     atom(l,1) = atom(l,1) + x;
+% 
+%     l = atom(:,2) > y;
+%     atom(l,4) = -1*atom(l,4);
+%     
+%     l = atom(:,2) < 0;
+%     atom(l,4) = -1*atom(l,4);
+%     
+%     
+%     temp(i) = (sum(atom(:,3).^2) + sum(atom(:,4).^2))*m/kb/2/natoms;
+%     
+%     
+%     for j = 1:pc
+%         trajectory(i,(2*j):(2*j+1)) = atom(j,1:2);
+% 
+%     end 
+%     figure(1)
+%     subplot(2,1,1);
+%     %hold off
+%     
+%     plot(atom(1:pc,1), atom(1:pc,2),'o')
+%     xlim([ 0 x])
+%     ylim([0 y])
+%     
+%     title(sprintf('Trajectories of %d electrons(Part 1)', pc));
+%     xlabel('x')
+%     ylabel('y')
+%     
+%     subplot(2,1,2)
+%     %hold off;
+%     if i>1
+%     plot(dt*(0:i-1), temp(1:i));
+%     axis([0 dt*iteration min(temp)*0.98 max(temp)*1.02]);
+%     title('Semiconductor Temperature');
+%     xlabel('Time (s)')
+%     ylabel('Temperature (K)')
+%     end
+%     %pause(0.05);
+% end
+
+    %part 2
+ %Collisions with Mean Free Path
+ %velocity of maxwell distribution is gaussian so makedist() can be used
+ %(slide 43 of atomicandMD powerpoint
+ pscat = 1 - exp(-dt/tmn);
+ vpdf = makedist('Normal','mu',0,'sigma',sqrt((kb*T)/m)); %gaussian centered on zero with a deviation of sqrt(kb*T/m)
+ 
+ 
+ atomp = rand(natoms,2); %array for position
+ atomp(:,1) = atomp(:,1)*x; atomp(:,2) = atomp(:,2)*y;
+ atomv = ones(natoms,2);
+ for i = 1:natoms
+ atomv(i,1) = random(vpdf);
+ atomv(i,2) = random(vpdf);
+ end
+ atom = [atomp atomv];
+vavg = sqrt(sum(atom(:,3).^2)/natoms + sum(atom(:,4).^2)/natoms);
+
+%Boltzmann Distrubion in histogram 
+vhist = sqrt(atom(:,3).^2 + atom(:,4).^2);
+
+figure(2)
+histogram(vhist)
+xlabel('Speed m/s')
+ylabel('Numbeer of electrons')
+fprintf('The average speed is %d m/s\n',vavg)
+
+for i = 1 : iteration
+    atom(:,1:2) = atom(:,1:2) + dt.*atom(:,3:4);
+    
+    %use logical index to rearrange electrons hitting boundaries
+    l = atom(:,1) > x;
+    atom(l,1) = atom(l,1) - x;
+    
+    l = atom(:,1) < 0;
+    atom(l,1) = atom(l,1) + x;
+
+    l = atom(:,2) > y;
+    atom(l,4) = -1*atom(l,4);
+    
+    l = atom(:,2) < 0;
+    atom(l,4) = -1*atom(l,4);
+
+j = pscat>rand(natoms,1);
+atom(j,3:4) = random(vpdf, [sum(j),2]);
+
+temp(i) = (sum(atom(:,3).^2) + sum(atom(:,4).^2))*m/kb/2/natoms;
+
+for j = 1:pc
+      trajectory(i,(2*j):(2*j+1)) = atom(j,1:2);
+end
+figure(3)
+subplot(2,1,1);
+%hold on;
+plot(atom(1:pc,1),atom(1:pc,2),'O')
+
+xlim([ 0 x])
+ylim([0 y])
+
+ title(sprintf('Trajectories of %d electrons with scater(Part w)', pc));
+     xlabel('x')
+     ylabel('y')
+ subplot(2,1,2)
+    
+ %hold off;
+    if i>1
+    plot(dt*(0:i-1), temp(1:i));
+    axis([0 dt*iteration min(temp)*0.98 max(temp)*1.02]);
+    title('Semiconductor Temperature');
+    xlabel('Time (s)')
+    ylabel('Temperature (K)')
+    end
+    %pause(0.05);
+end
+
+
+
